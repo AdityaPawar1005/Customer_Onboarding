@@ -11,15 +11,15 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+
 @Embeddable
 public class NotificationId implements Serializable {
     private Long userId;
     private Long planId;
 
+    public NotificationId(){}
+    public NotificationId(Long userId, Long planId) {
+    }
 
 
     @Override
@@ -34,4 +34,7 @@ public class NotificationId implements Serializable {
         NotificationId that = (NotificationId) obj;
         return Objects.equals(userId, that.userId) && Objects.equals(planId, that.planId);
     }
+
+
+
 }

@@ -4,19 +4,14 @@ import jakarta.persistence.*;
 
 @Entity
 public class Document {
-
     @Id
     private Long userId;
-
     @OneToOne
     @MapsId
     @JoinColumn(name = "userId")
     private User user;
-
     private String type;
-
     private boolean status;
-
     public Document(Long userId, User user, String type) {
         this.userId = userId;
         this.user = user;

@@ -1,138 +1,228 @@
 package com.bootcamp.customer.Onboarding.controller;
 
+import com.bootcamp.customer.Onboarding.Service.OtpService;
 import com.bootcamp.customer.Onboarding.Service.UserService;
 import com.bootcamp.customer.Onboarding.model.User;
 import com.bootcamp.customer.Onboarding.model.UserDetailsDTO;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.when;
-import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 public class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @InjectMocks
+    private UserController userController;
 
-    @MockBean
+    @Mock
     private UserService userService;
 
+    @Mock
+    private OtpService otpService;
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testRegisterUser_Success() throws Exception {
-        when(userService.checkIfUSerExists("testuser")).thenReturn(false);
+    void testRegisterUser_Success() {
+        // Arrange
+        String username = "testUser";
+        String password = "password123";
+        String email = "test@example.com";
+        String phone = "1234567890";
+        int customerType = 1;
 
-        mockMvc.perform(post("/user/register")
-                        .param("username", "testuser")
-                        .param("password", "password")
-                        .param("email", "test@example.com")
-                        .param("phone", "1234567890")
-                        .param("customerType", "1"))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$").value("Registration Successfully"));
+        when(userService.checkIfUSerExists(email)).thenReturn(false);
+        when(userService.registerUser(username, password, email, phone, customerType)).thenReturn(new User());
+
+        // Act
+        ResponseEntity<String> response = userController.registerUser(username, password, email, phone, customerType);
+
+        // Assert
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals("Registration Successfully", response.getBody());
     }
 
     @Test
-    public void testRegisterUser_UserExists() throws Exception {
-        when(userService.checkIfUSerExists("testuser")).thenReturn(true);
+    void testRegisterUser_UserExists() {
+        // Arrange
+        String email = "test@example.com";
+        when(userService.checkIfUSerExists(email)).thenReturn(true);
 
-        mockMvc.perform(post("/user/register")
-                        .param("username", "testuser")
-                        .param("password", "password")
-                        .param("email", "test@example.com")
-                        .param("phone", "1234567890")
-                        .param("customerType", "1"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$").value("User Already exists"));
+        // Act
+        ResponseEntity<String> response = userController.registerUser("testUser", "password123", email, "1234567890", 1);
+
+        // Assert
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals("User Already exists", response.getBody());
     }
 
     @Test
-    public void testRegisterUser_Exception() throws Exception {
-        when(userService.checkIfUSerExists("testuser")).thenThrow(new RuntimeException("Database error"));
+    void testLoginUser_Success() {
+        // Arrange
+        String username = "testUser";
+        String password = "password123";
+        User mockUser = new User();
+        when(userService.loginUser(username, password)).thenReturn(mockUser);
 
-        mockMvc.perform(post("/user/register")
-                        .param("username", "testuser")
-                        .param("password", "password")
-                        .param("email", "test@example.com")
-                        .param("phone", "1234567890")
-                        .param("customerType", "1"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$").value("Error registering user: Database error"));
+        // Act
+        ResponseEntity<?> response = userController.loginUser(username, password);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(mockUser, response.getBody());
     }
 
     @Test
-    public void testLoginUser_Success() throws Exception {
-        User user = new User();
-        user.setUsername("testuser");
-        when(userService.loginUser("testuser", "password")).thenReturn(user);
+    void testLoginUser_InvalidCredentials() {
+        // Arrange
+        when(userService.loginUser(anyString(), anyString())).thenReturn(null);
 
-        mockMvc.perform(post("/user/login")
-                        .param("username", "testuser")
-                        .param("password", "password"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testuser"));
+        // Act
+        ResponseEntity<?> response = userController.loginUser("invalidUser", "wrongPassword");
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Invalid username or password", response.getBody());
     }
 
     @Test
-    public void testLoginUser_InvalidCredentials() throws Exception {
-        when(userService.loginUser("testuser", "password")).thenReturn(null);
+    void testUpdatePassword_Success() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("username", "testUser");
+        when(userService.sendOtp("testUser")).thenReturn(true);
 
-        mockMvc.perform(post("/user/login")
-                        .param("username", "testuser")
-                        .param("password", "password"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$").value("Invalid username or password"));
+        // Act
+        ResponseEntity<String> response = userController.updatePassword(request);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Otp sent to your Mail", response.getBody());
     }
 
     @Test
-    public void testProfileUser_Success() throws Exception {
-        UserDetailsDTO userDetails = new UserDetailsDTO();
-        userDetails.setUsername("testuser");
-        when(userService.authenticate("testuser", "password")).thenReturn(userDetails);
+    void testUpdatePassword_InvalidUser() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("username", "invalidUser");
+        when(userService.sendOtp(anyString())).thenReturn(false);
 
-        Map<String, String> loginRequest = new HashMap<>();
-        loginRequest.put("username", "testuser");
-        loginRequest.put("password", "password");
+        // Act
+        ResponseEntity<String> response = userController.updatePassword(request);
 
-        mockMvc.perform(post("/user/profile")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"testuser\", \"password\":\"password\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testuser"));
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Invalid user", response.getBody());
     }
 
     @Test
-    public void testProfileUser_InvalidCredentials() throws Exception {
-        when(userService.authenticate("testuser", "password")).thenReturn(null);
+    void testVerifyOtp_Success() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("email", "test@example.com");
+        request.put("otp", "123456");
+        when(otpService.verifyOtp("test@example.com", "123456")).thenReturn(true);
 
-        mockMvc.perform(post("/user/profile")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"testuser\", \"password\":\"password\"}"))
-                .andExpect(status().isUnauthorized());
+        // Act
+        ResponseEntity<?> response = userController.verifyOtp(request);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("OTP verified successfully", response.getBody());
     }
 
+    @Test
+    void testVerifyOtp_Invalid() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("email", "test@example.com");
+        request.put("otp", "wrongOtp");
+        when(otpService.verifyOtp(anyString(), anyString())).thenReturn(false);
+
+        // Act
+        ResponseEntity<?> response = userController.verifyOtp(request);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Invalid or expired OTP", response.getBody());
+    }
+
+    @Test
+    void testChangePassword_Success() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("username", "testUser");
+        request.put("password", "newPassword");
+
+        when(userService.updatePassword("testUser", "newPassword")).thenReturn(true);
+
+        // Act
+        ResponseEntity<String> response = userController.changePassword(request);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Password updated successfully", response.getBody());
+    }
+
+    @Test
+    void testChangePassword_Failure() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("username", "testUser");
+        request.put("password", "newPassword");
+
+        when(userService.updatePassword("testUser", "newPassword")).thenReturn(false);
+
+        // Act
+        ResponseEntity<String> response = userController.changePassword(request);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("User not found or password update failed", response.getBody());
+    }
+
+    @Test
+    void testProfileUser_Success() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("username", "testUser");
+        request.put("password", "password123");
+        UserDetailsDTO userDetailsDTO = new UserDetailsDTO();
+        when(userService.authenticate("testUser", "password123")).thenReturn(userDetailsDTO);
+
+        // Act
+        ResponseEntity<UserDetailsDTO> response = userController.profileUser(request);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(userDetailsDTO, response.getBody());
+    }
+
+    @Test
+    void testProfileUser_Unauthorized() {
+        // Arrange
+        Map<String, String> request = new HashMap<>();
+        request.put("username", "testUser");
+        request.put("password", "wrongPassword");
+        when(userService.authenticate(anyString(), anyString())).thenReturn(null);
+
+        // Act
+        ResponseEntity<UserDetailsDTO> response = userController.profileUser(request);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
 }

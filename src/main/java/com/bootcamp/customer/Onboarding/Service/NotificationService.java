@@ -46,7 +46,7 @@ public class NotificationService {
         User user = userOpt.get();
         Plans plans = plansOpt.get();
         System.out.println(user.getUserId());
-        System.out.println(plans.getPlanId());
+        System.out.println(plans.getPlan_id());
 
         NotificationId notificationId = new NotificationId(userId,plan_Id);
         Notification notification = new Notification(notificationId,user,plans,true);
@@ -96,7 +96,7 @@ public class NotificationService {
         }
 
         User user = userOpt.get();
-            emailService.sendDocumentNotification(user.getEmail());
+        emailService.sendDocumentNotification(user.getEmail());
 
     }
 

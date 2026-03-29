@@ -150,4 +150,44 @@ public class EmailService {
         }
     }
 
+    public void sendOtpEmail(String to, String userName, String otp) {
+
+        JSONObject emailContent = new JSONObject();
+        emailContent.put("From", new JSONObject().put("Email", emailConstants.EMAIL_FROM));
+        emailContent.put("To", new JSONArray().put(new JSONObject().put("Email", to)));
+        emailContent.put("Subject", "OTP for Login");
+
+        String htmlContent = "<html>"
+                + "<body style='font-family: Arial, sans-serif; color: #333;'>"
+                + "<h1 style='color: #4CAF50;'>Your OTP Code</h1>"
+                + "<p>Dear " + userName + ",</p>"
+                + "<p>Thank you for using our service. Your OTP code is: <strong>" + otp + "</strong></p>"
+                + "<p>This code is valid for 2 minutes. Please use it to complete your verification.</p>"
+                + "<p>If you did not request this OTP, please ignore this email.</p>"
+                + "<p>Best regards,</p>"
+                + "<p>Unitel</p>"
+                + "</body>"
+                + "</html>";
+
+        emailContent.put("HTMLPart", htmlContent);
+
+        MailjetRequest request = new MailjetRequest(Emailv31.resource)
+                .property(Emailv31.MESSAGES, new JSONArray().put(emailContent));
+
+        try {
+            MailjetResponse response = mailjetClient.post(request);
+            if (response.getStatus() == 200) {
+                System.out.println("Email sent successfully for document verification");
+            } else {
+                String responseBody = response.getData().toString();
+                throw new RuntimeException("Failed to send email. Status code: " + response.getStatus() + ", Response body: " + responseBody);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error sending email", e);
+        }
+
+
+    }
+
 }

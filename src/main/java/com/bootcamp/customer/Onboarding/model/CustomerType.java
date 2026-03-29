@@ -15,22 +15,16 @@ import java.util.List;
 
 
 public class CustomerType {
-
-
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private int customerTypeId;
         private String typeName;
         private String description;
-
-
     public CustomerType(){}
-
     public CustomerType(int customerTypeId, String typeName, String description) {
         this.customerTypeId = customerTypeId;
         this.typeName = typeName;
         this.description = description;
-
     }
 
     public int getCustomerTypeId() {

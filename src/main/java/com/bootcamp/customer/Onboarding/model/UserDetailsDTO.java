@@ -1,6 +1,5 @@
 package com.bootcamp.customer.Onboarding.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserDetailsDTO {
@@ -8,11 +7,30 @@ public class UserDetailsDTO {
     private String name;
     private String phone;
     private int customerType;
-    private String plan_name;
-    private String plan_description;
-    private double price;
-    private int validity_days;
+    private String email;
 
+    public UserDetailsDTO() {
+
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    private List<PlanDTO> plans; // List of plans
+    private boolean documentVerification;
+
+    public boolean isDocumentVerification() {
+        return documentVerification;
+    }
+
+    public void setDocumentVerification(boolean documentVerification) {
+        this.documentVerification = documentVerification;
+    }
 
     public String getUsername() {
         return username;
@@ -46,56 +64,20 @@ public class UserDetailsDTO {
         this.customerType = customerType;
     }
 
-    public String getPlan_name() {
-        return plan_name;
+    public List<PlanDTO> getPlans() {
+        return plans;
     }
 
-    public void setPlan_name(String plan_name) {
-        this.plan_name = plan_name;
+    public void setPlans(List<PlanDTO> plans) {
+        this.plans = plans;
     }
 
-    public String getPlan_description() {
-        return plan_description;
-    }
-
-    public void setPlan_description(String plan_description) {
-        this.plan_description = plan_description;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public int getValidity_days() {
-        return validity_days;
-    }
-
-    public void setValidity_days(int validity_days) {
-        this.validity_days = validity_days;
-    }
-
-    public UserDetailsDTO() {
-    }
-
-    public UserDetailsDTO(String username, String name, String phone, int customerType, String plan_name, String plan_description, double price, int validity_days) {
+    public UserDetailsDTO(String username, String phone, int customerType, List<PlanDTO> plans, boolean documentVerification,String email) {
         this.username = username;
-        this.name = name;
         this.phone = phone;
         this.customerType = customerType;
-        this.plan_name = plan_name;
-        this.plan_description = plan_description;
-        this.price = price;
-        this.validity_days = validity_days;
-    }
-    public UserDetailsDTO(String username, String name, String phone, int customerType) {
-        this.username = username;
-        this.name = name;
-        this.phone = phone;
-        this.customerType = customerType;
-
+        this.plans = plans;
+        this.documentVerification = documentVerification;
+        this.email=email;
     }
 }

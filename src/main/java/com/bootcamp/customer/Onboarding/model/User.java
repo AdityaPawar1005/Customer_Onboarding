@@ -8,10 +8,7 @@ import java.util.List;
 
 
 @Entity
-//@Getter
-//@Setter
-//@NoArgsConstructor
-//@AllArgsConstructor
+
 
 public class User {
 
@@ -19,27 +16,18 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
-
     private String username;
     private String passwordHash;
-
     private String email;
     private String phoneNumber;
-
     private int customerType;
-
     @ManyToOne
     @JoinColumn(name = "customerType", referencedColumnName = "customerTypeId", insertable = false, updatable = false)
     private CustomerType customerTypeEntity;
-
-
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<UserPlans> userPlans;
-
     public User(){}
-
-
 
     public User(Long userId, String username, String passwordHash, String email, String phoneNumber, int customerType, CustomerType customerTypeEntity, List<UserPlans> userPlans) {
         this.userId = userId;
@@ -50,7 +38,6 @@ public class User {
         this.customerType = customerType;
         this.customerTypeEntity = customerTypeEntity;
         this.userPlans = userPlans;
-
     }
 
     public Long getUserId() {

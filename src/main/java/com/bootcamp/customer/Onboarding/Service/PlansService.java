@@ -1,8 +1,10 @@
 package com.bootcamp.customer.Onboarding.Service;
 
+import com.bootcamp.customer.Onboarding.Repository.PlanTypeRepository;
 import com.bootcamp.customer.Onboarding.Repository.PlansRepository;
 import com.bootcamp.customer.Onboarding.Repository.UserPlansRepository;
 import com.bootcamp.customer.Onboarding.Repository.UserRepository;
+import com.bootcamp.customer.Onboarding.model.PlanType;
 import com.bootcamp.customer.Onboarding.model.Plans;
 import com.bootcamp.customer.Onboarding.model.User;
 import com.bootcamp.customer.Onboarding.model.UserPlans;
@@ -25,6 +27,11 @@ public class PlansService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserService userService;
+    @Autowired   // in PlansService.java
+    private PlanTypeRepository planTypeRepository;
+    public List<PlanType> getAllPlanTypes() {
+        return planTypeRepository.findAll();
+    }
 
     public List<Plans> getAllPlans(){
         return plansRepository.findAll();

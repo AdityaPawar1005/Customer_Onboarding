@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserPlansService {
@@ -67,7 +68,7 @@ public class UserPlansService {
         notificationService.createNotification(userId,planId);
 
     }
-    public UserPlans getUserPlans(Long userId){
+    public Optional<UserPlans> getUserPlans(Long userId){
         User user = userRepository.findById(userId).orElseThrow(
                 ()-> new RuntimeException("User Not Found")
         );
